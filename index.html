@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seamless Spotify API Player</title>
+    <title>Advanced Spotify Player</title>
     <style>
         :root {
             --spotify-green: #1DB954;
@@ -38,71 +38,42 @@
             overflow: hidden;
         }
         .login-view {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-            height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; height: 100%;
         }
         #login-button {
-            background-color: var(--spotify-green);
-            color: var(--text-light);
-            border: none;
-            padding: 16px 32px;
-            border-radius: 500px;
-            font-size: 1.2em;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: transform 0.2s, filter 0.2s;
+            background-color: var(--spotify-green); color: var(--text-light); border: none; padding: 16px 32px; border-radius: 500px; font-size: 1.2em; font-weight: bold; cursor: pointer; margin-top: 20px; transition: transform 0.2s, filter 0.2s;
         }
         #login-button:hover { transform: scale(1.05); filter: brightness(1.1); }
         
-        .player-view {
-            display: none; /* Hidden by default */
-            flex-direction: column;
-            height: 100%;
-        }
-        .player-panel {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 30px;
-            text-align: center;
-        }
-        #artwork {
-            width: 100%;
-            max-width: 250px;
-            aspect-ratio: 1 / 1;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 20px var(--shadow);
-        }
+        .player-view { display: none; flex-direction: column; height: 100%; }
+        .player-panel { display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 25px; text-align: center; }
+        #artwork { width: 100%; max-width: 250px; aspect-ratio: 1 / 1; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 20px var(--shadow); transition: background-image 0.5s ease-in-out; }
         #title { font-size: 1.5em; font-weight: 600; margin-bottom: 5px; }
-        #artist { font-size: 1em; color: var(--text-medium); margin-bottom: 20px; }
-        .controls { display: flex; justify-content: center; align-items: center; gap: 30px; }
+        #artist { font-size: 1em; color: var(--text-medium); margin-bottom: 15px; }
+        
+        .progress-container { width: 100%; background: var(--surface-medium); border-radius: 5px; cursor: pointer; height: 6px; margin-bottom: 5px; }
+        .progress { background-color: var(--spotify-green); border-radius: 5px; height: 100%; width: 0%; transition: width 0.1s linear; }
+        .time-info { display: flex; justify-content: space-between; font-size: 0.8em; width: 100%; color: var(--text-medium); margin-bottom: 15px; }
+
+        .controls { display: flex; justify-content: center; align-items: center; gap: 30px; width: 100%; }
         .control-btn { background: none; border: none; color: var(--text-medium); font-size: 22px; cursor: pointer; transition: all 0.2s; }
         .control-btn:hover { color: var(--text-light); transform: scale(1.1); }
         .play-btn { font-size: 32px; color: var(--text-light); background-color: var(--spotify-green); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
         
-        .playlist-panel {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 0 20px;
-            border-top: 1px solid var(--surface-medium);
-        }
+        .volume-container { display: flex; align-items: center; width: 100%; gap: 10px; margin-top: 20px; }
+        .volume-container i { color: var(--text-medium); }
+        input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; background: var(--surface-medium); border-radius: 5px; cursor: pointer; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; background: var(--text-light); border-radius: 50%; }
+
+        .playlist-panel { flex-grow: 1; overflow-y: auto; padding: 0 20px; border-top: 1px solid var(--surface-medium); }
         .playlist-panel h3 { padding: 20px 0 10px; position: sticky; top: 0; background: var(--surface-light); }
-        .track-item {
-            display: flex; align-items: center; margin-bottom: 10px; padding: 8px; border-radius: 6px; cursor: pointer; transition: background-color 0.2s;
-        }
+        .track-item { display: flex; align-items: center; margin-bottom: 10px; padding: 8px; border-radius: 6px; cursor: pointer; transition: background-color 0.2s; }
         .track-item:hover { background-color: var(--surface-medium); }
         .track-item.playing { background-color: var(--spotify-green); }
         .track-item img { width: 40px; height: 40px; border-radius: 4px; margin-right: 12px; }
         .track-info h4 { font-size: 0.9em; font-weight: 500; }
         .track-info p { font-size: 0.8em; color: var(--text-medium); }
+        .loader { text-align: center; padding: 20px; color: var(--text-medium); }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
@@ -110,7 +81,7 @@
 
     <div class="container">
         <div class="login-view" id="login-view">
-            <h1>Welcome</h1>
+            <h1>Advanced Player</h1>
             <p>Connect your Spotify Premium account to begin.</p>
             <button id="login-button">Connect with Spotify</button>
         </div>
@@ -120,10 +91,22 @@
                 <img id="artwork" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Album Art">
                 <h2 id="title">Select a song to play</h2>
                 <p id="artist"></p>
+                <div class="progress-container" id="progress-container">
+                    <div class="progress" id="progress"></div>
+                </div>
+                <div class="time-info">
+                    <span id="current-time">0:00</span>
+                    <span id="duration">0:00</span>
+                </div>
                 <div class="controls">
                     <button class="control-btn" id="prev-btn"><i class="fas fa-backward-step"></i></button>
                     <button class="control-btn play-btn" id="play-btn"><i class="fas fa-play"></i></button>
                     <button class="control-btn" id="next-btn"><i class="fas fa-forward-step"></i></button>
+                </div>
+                <div class="volume-container">
+                    <i class="fas fa-volume-down"></i>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
+                    <i class="fas fa-volume-up"></i>
                 </div>
             </div>
             <div class="playlist-panel">
@@ -136,12 +119,8 @@
     <script src="https://sdk.scdn.co/spotify-player.js"></script>
     <script>
         // --- Configuration ---
-        // PASTE YOUR CLIENT ID FROM THE SPOTIFY DEVELOPER DASHBOARD HERE
-        const CLIENT_ID = "YOUR_CLIENT_ID_HERE"; 
-        
-        // This line automatically gets the correct URI.
-        // Make sure this exact address is in your Spotify Dashboard settings.
-        const REDIRECT_URI = window.location.href.split('#')[0]; 
+        const CLIENT_ID = "a08a282255b749878991ce78b41c5c23";
+        const REDIRECT_URI = window.location.href.split('#')[0];
 
         // --- DOM Elements ---
         const loginView = document.getElementById('login-view');
@@ -154,35 +133,32 @@
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
         const playlistContainer = document.getElementById('playlist-container');
+        const progressContainer = document.getElementById('progress-container');
+        const progress = document.getElementById('progress');
+        const currentTimeEl = document.getElementById('current-time');
+        const durationEl = document.getElementById('duration');
+        const volumeSlider = document.getElementById('volume-slider');
 
         let accessToken = null;
         let spotifyPlayer = null;
         let deviceId = null;
+        let progressInterval = null;
 
         // --- Main Logic ---
         window.onload = () => {
             accessToken = getAccessTokenFromUrl();
             if (accessToken) {
-                // User has logged in, hide login and show player
                 loginView.style.display = 'none';
                 playerView.style.display = 'flex';
                 initializeSpotifyPlayer();
             } else {
-                // User needs to log in
                 loginView.style.display = 'flex';
                 playerView.style.display = 'none';
             }
         };
 
         loginButton.addEventListener('click', () => {
-            const scopes = [
-                'streaming',
-                'user-read-email',
-                'user-read-private',
-                'user-modify-playback-state',
-                'user-read-playback-state',
-                'user-top-read'
-            ].join(' ');
+            const scopes = ['streaming', 'user-read-email', 'user-read-private', 'user-modify-playback-state', 'user-read-playback-state', 'user-top-read'].join(' ');
             const authUrl = `https://accounts.spotify.com/authorize?response_type=token&client_id=${CLIENT_ID}&scope=${encodeURIComponent(scopes)}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
             window.location = authUrl;
         });
@@ -194,7 +170,7 @@
         function initializeSpotifyPlayer() {
             window.onSpotifyWebPlaybackSDKReady = () => {
                 spotifyPlayer = new Spotify.Player({
-                    name: 'Seamless Web Player',
+                    name: 'Advanced Web Player',
                     getOAuthToken: cb => { cb(accessToken); },
                     volume: 0.5
                 });
@@ -202,12 +178,13 @@
                 spotifyPlayer.addListener('ready', async ({ device_id }) => {
                     console.log('Player is ready with Device ID', device_id);
                     deviceId = device_id;
+                    await transferPlayback();
                     const topTracks = await getUsersTopTracks();
                     renderPlaylist(topTracks);
                 });
 
                 spotifyPlayer.addListener('player_state_changed', updateUI);
-                spotifyPlayer.addListener('account_error', () => { alert('You must have a Spotify Premium account to use this player.'); });
+                spotifyPlayer.addListener('account_error', () => { alert('You must have a Spotify Premium account.'); });
                 spotifyPlayer.connect();
             };
         }
@@ -224,6 +201,7 @@
         }
 
         async function getUsersTopTracks() {
+            playlistContainer.innerHTML = `<div class="loader">Loading your tracks...</div>`;
             const response = await fetchWebApi('v1/me/top/tracks?time_range=medium_term&limit=20');
             return response?.items || [];
         }
@@ -233,20 +211,22 @@
             await fetchWebApi(`v1/me/player/play?device_id=${deviceId}`, 'PUT', { uris: [trackUri] });
         }
 
+        async function transferPlayback() {
+            await fetchWebApi('v1/me/player', 'PUT', { device_ids: [deviceId], play: false });
+        }
+
         // --- UI Updates ---
         function renderPlaylist(tracks) {
             playlistContainer.innerHTML = '';
+            if (!tracks.length) {
+                playlistContainer.innerHTML = `<div class="loader">Could not load tracks.</div>`;
+                return;
+            }
             tracks.forEach(track => {
                 const trackItem = document.createElement('div');
                 trackItem.className = 'track-item';
                 trackItem.dataset.uri = track.uri;
-                trackItem.innerHTML = `
-                    <img src="${track.album.images[2]?.url}" alt="${track.album.name}">
-                    <div class="track-info">
-                        <h4>${track.name}</h4>
-                        <p>${track.artists.map(a => a.name).join(', ')}</p>
-                    </div>
-                `;
+                trackItem.innerHTML = `<img src="${track.album.images[2]?.url}" alt="${track.album.name}"><div class="track-info"><h4>${track.name}</h4><p>${track.artists.map(a => a.name).join(', ')}</p></div>`;
                 trackItem.addEventListener('click', () => playTrack(track.uri));
                 playlistContainer.appendChild(trackItem);
             });
@@ -260,14 +240,50 @@
             artistEl.textContent = track.artists.map(a => a.name).join(', ');
             playBtn.querySelector('i').className = state.paused ? 'fas fa-play' : 'fas fa-pause';
 
+            clearInterval(progressInterval);
+            updateProgress(state.position, state.duration);
+            if (!state.paused) {
+                progressInterval = setInterval(() => {
+                    spotifyPlayer.getCurrentState().then(currentState => {
+                        if (currentState) updateProgress(currentState.position, currentState.duration);
+                    });
+                }, 1000);
+            }
+
             document.querySelectorAll('.track-item').forEach(item => {
                 item.classList.toggle('playing', item.dataset.uri === track.uri);
             });
         }
 
+        function updateProgress(position, duration) {
+            const progressPercent = (position / duration) * 100;
+            progress.style.width = `${progressPercent}%`;
+            currentTimeEl.textContent = formatTime(position);
+            durationEl.textContent = formatTime(duration);
+        }
+
+        function formatTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
+
+        // --- Event Listeners ---
         playBtn.addEventListener('click', () => spotifyPlayer?.togglePlay());
         prevBtn.addEventListener('click', () => spotifyPlayer?.previousTrack());
         nextBtn.addEventListener('click', () => spotifyPlayer?.nextTrack());
+        volumeSlider.addEventListener('input', e => spotifyPlayer?.setVolume(e.target.value));
+        progressContainer.addEventListener('click', e => {
+            const width = progressContainer.clientWidth;
+            const clickX = e.offsetX;
+            spotifyPlayer.getCurrentState().then(state => {
+                if (state) {
+                    const duration = state.duration;
+                    spotifyPlayer.seek((clickX / width) * duration);
+                }
+            });
+        });
     </script>
 </body>
 </html>
